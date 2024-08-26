@@ -39,23 +39,28 @@ import {filterImageFromURL, deleteLocalFiles} from './util/util.js';
 
   app.get('/filteredimage', async (req, res) => {
     const { image_url } = req.query;
+    const pattern = /\.(jpg|jpeg|png|webp|avif|gif|svg)$/
   
     // Validate the image_url query
     if (!image_url) {
       return res.status(400).send('image_url query parameter is required');
     }
+
+    if(!pattern.test(image_url)){
+      res.status(400).send("Invalid image")
+    }
   
     try {
       // Call filterImageFromURL(image_url) to filter the image
       const filteredImagePath = await filterImageFromURL(image_url);
-  
+      console.log("filteredImagePath "+ filteredImagePath)
       // Send the resulting file in the response
       res.status(200).sendFile(filteredImagePath, (err) => {
         if (err) {
           return res.status(500).send('Error sending the file');
         }
         // Delete any files on the server on finish of the response
-        deleteLocalFiles(filteredImagePath, (err) => {
+        deleteLocalFiles([filteredImagePath], (err) => {
           if (err) {
             console.error('Error deleting temporary file', err);
           }
